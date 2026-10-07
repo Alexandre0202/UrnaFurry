@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Urna Eletrônica - Eleições 2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    min-height: 100vh;
+    display: flex; align-items: center; justify-content: center;
+    background: #0d1117 radial-gradient(circle at 50% 15%, #1c2531, #080a0e 75%);
+    font-family: 'Atkinson Hyperlegible', 'Segoe UI', Tahoma, sans-serif;
+    padding: 14px;
+    user-select: none;
+  }
+
+  .urna {
+    width: 900px; max-width: 100%;
+    background: linear-gradient(180deg, #e2dcc8 0%, #cdc5ae 45%, #bdb59e 100%);
+    border-radius: 24px;
+    padding: 16px 16px 10px;
+    border: 2px solid #9a9075;
+    box-shadow:
+      0 60px 100px rgba(0,0,0,.75),
+      0 15px 35px rgba(0,0,0,.55),
+      inset 0 2px 0 rgba(255,255,255,.7),
+      inset 0 -4px 8px rgba(0,0,0,.18);
+  }
+
+  .lcd-topo {
+    background: #09120a;
+    border-radius: 8px;
+    padding: 10px 14px;
+    text-align: center;
+    color: #80ff80;
+    font-family: 'Courier New', monospace;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: 7px;
+    box-shadow:
+      inset 0 4px 10px rgba(0,0,0,.95),
+      inset 0 -1px 0 rgba(128,255,128,.12);
+    text-shadow: 0 0 7px rgba(128,255,128,.85);
+    margin-bottom: 14px;
+  }
+  .lcd-topo small {
+    display: block; font-size: 9px; letter-spacing: 4px;
+    opacity: .65; margin-top: 3px; font-weight: 600;
+  }
+
+  .painel {
+    background: linear-gradient(180deg, #2e2e2a, #1a1a17);
+    border-radius: 16px;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 16px;
+    box-shadow:
+      inset 0 4px 12px rgba(0,0,0,.9),
+      inset 0 -1px 0 rgba(255,255,255,.05);
+  }
+
+  .tela {
+    background: #f4f4ea;
+    border-radius: 6px;
+    padding: 20px 22px 18px;
+    min-height: 540px;
+    display: flex; flex-direction: column;
+    font-family: 'Atkinson Hyperlegible', 'Courier New', monospace;
+    color: #0a0a0a;
+    box-shadow:
+      inset 0 0 0 2px #111,
+      inset 0 6px 18px rgba(0,0,0,.12);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .barra-progresso {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #222;
+  }
+  .barra-progresso .etapa {
+    flex: 1;
+    height: 8px;
+    background: #c8c8b8;
+    border-radius: 2px;
+    transition: background .3s;
+  }
+  .barra-progresso .etapa.atual { background: #1a7a32; }
+  .barra-progresso .etapa.concluida { background: #0a4a1e; }
+
+  .titulo-cargo {
+    font-size: 15px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    line-height: 1.35;
+    text-transform: uppercase;
+  }
+  .titulo-cargo b { display: block; font-size: 19px; margin-top: 3px; }
+
+  .linha-num {
+    display: flex; align-items: center; gap: 14px;
+    margin-top: 20px;
+    font-size: 15px; font-weight: 700;
+  }
+  .digitos { display: flex; gap: 8px; }
+  .dig {
+    width: 44px; height: 58px;
+    background: #fff;
+    border: 2px solid #111;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 34px; font-weight: 800;
+    font-family: 'Courier New', monospace;
+    color: #000;
+  }
+
+  .conteudo { display: none; margin-top: 24px; gap: 20px; }
+  .conteudo.ativo { display: flex; }
+
+  .dados { flex: 1; font-size: 15px; line-height: 2; font-weight: 700; }
+  .dados .linha b {
+    font-size: 17px; font-weight: 800;
+    text-transform: uppercase;
+  }
+  .dados .linha span { display: inline-block; min-width: 82px; }
+
+  .foto-box {
+    width: 130px; height: 160px;
+    background: #d8d8cc;
+    border: 2px solid #111;
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+    font-size: 11px; text-align: center;
+    color: #555; padding: 6px;
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+    font-weight: 700;
+  }
+  .foto-box img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+  }
+
+  .msg-nulo {
+    display: none;
+    margin-top: 30px;
+    font-size: 34px;
+    font-weight: 900;
+    color: #c10000;
+    letter-spacing: 4px;
+    text-align: center;
+  }
+  .msg-nulo.ativo { display: block; animation: pisca .9s infinite; }
+  @keyframes pisca { 50% { opacity: .2; } }
+
+  .rodape-tela {
+    margin-top: auto;
+    padding-top: 14px;
+    border-top: 2px dashed #444;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.7;
+    letter-spacing: .3px;
+    color: #111;
+  }
+  .rodape-tela .verde { color: #0a6b18; }
+  .rodape-tela .laranja { color: #b86400; }
+
+  .tela-gravando {
+    display: none;
+    position: absolute; inset: 0;
+    background: #f4f4ea;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 18px;
+    font-family: 'Atkinson Hyperlegible', 'Courier New', monospace;
+    z-index: 10;
+  }
+  .tela-gravando.ativo { display: flex; }
+
+  .tela-gravando .gravando-txt {
+    font-size: 26px;
+    font-weight: 900;
+    color: #0a6b18;
+    letter-spacing: 8px;
+    animation: pisca .8s infinite;
+  }
+  .tela-gravando .barra-gravacao {
+    width: 70%;
+    height: 22px;
+    background: #c8c8b8;
+    border: 2px solid #111;
+    border-radius: 3px;
+    overflow: hidden;
+    box-shadow: inset 0 2px 4px rgba(0,0,0,.15);
+  }
+  .tela-gravando .barra-gravacao .preenchimento {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #1a7a32, #29c24a);
+    transition: width 1.8s linear;
+  }
+  .tela-gravando .gravando-sub {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    color: #444;
+  }
+
+  .tela-fim {
+    display: none;
+    position: absolute; inset: 0;
+    background: #f4f4ea;
+    align-items: center; justify-content: center;
+    flex-direction: column; gap: 12px;
+    font-family: 'Courier New', monospace;
+    z-index: 11;
+  }
+  .tela-fim.ativo { display: flex; }
+  .tela-fim .fim {
+    font-size: 110px;
+    font-weight: 900;
+    color: #0a6b18;
+    letter-spacing: 10px;
+    text-shadow: 0 6px 0 rgba(0,0,0,.1);
+    animation: pulsa .7s ease infinite alternate;
+  }
+  @keyframes pulsa { from { transform: scale(1);} to { transform: scale(1.06);} }
+  .tela-fim .fim-sub {
+    font-size: 13px; font-weight: 700; letter-spacing: 4px; color: #333;
+  }
+
+  .teclado { display: flex; flex-direction: column; gap: 12px; }
+  .nums {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .acoes {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-top: 4px;
+  }
+
+  .btn {
+    height: 66px;
+    border: none; border-radius: 10px;
+    font-size: 26px; font-weight: 800;
+    cursor: pointer;
+    background: linear-gradient(180deg, #3a3a35, #181814);
+    color: #f4f4e8;
+    box-shadow:
+      0 5px 0 #050505,
+      0 8px 14px rgba(0,0,0,.55),
+      inset 0 1px 0 rgba(255,255,255,.1);
+    transition: transform .05s, box-shadow .05s, filter .1s;
+    font-family: 'Atkinson Hyperlegible', sans-serif;
+  }
+  .btn:hover { filter: brightness(1.18); }
+  .btn:active {
+    transform: translateY(4px);
+    box-shadow: 0 1px 0 #050505, inset 0 1px 0 rgba(255,255,255,.1);
+  }
+  .btn.zero { grid-column: 2; }
+
+  .btn.acao {
+    height: 62px; font-size: 12px;
+    letter-spacing: 1px; font-weight: 800;
+  }
+  .btn.branco {
+    background: linear-gradient(180deg, #ffffff, #ded9c8);
+    color: #111;
+    box-shadow: 0 5px 0 #8a8570, 0 8px 14px rgba(0,0,0,.45), inset 0 1px 0 #fff;
+  }
+  .btn.branco:active { box-shadow: 0 1px 0 #8a8570, inset 0 1px 0 #fff; }
+  .btn.corrige {
+    background: linear-gradient(180deg, #ffb020, #c47a00);
+    color: #1a1000;
+    box-shadow: 0 5px 0 #6b4200, 0 8px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.35);
+  }
+  .btn.corrige:active { box-shadow: 0 1px 0 #6b4200, inset 0 1px 0 rgba(255,255,255,.35); }
+  .btn.confirma {
+    background: linear-gradient(180deg, #29c24a, #0e7a24);
+    color: #fff;
+    box-shadow: 0 5px 0 #043d13, 0 8px 14px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.3);
+  }
+  .btn.confirma:active { box-shadow: 0 1px 0 #043d13, inset 0 1px 0 rgba(255,255,255,.3); }
+
+  .rodape-urna {
+    text-align: center;
+    padding: 8px 4px 0;
+    font-size: 10px;
+    letter-spacing: 3px;
+    color: #5f583e;
+    font-weight: 700;
+  }
+
+  @media (max-width: 780px) {
+    .painel { grid-template-columns: 1fr; }
+    .tela { min-height: 400px; padding: 16px; }
+    .btn { height: 56px; font-size: 22px; }
+    .btn.acao { height: 52px; font-size: 11px; }
+    .tela-fim .fim { font-size: 72px; }
+    .dig { width: 38px; height: 50px; font-size: 28px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="urna">
+
+  <div class="lcd-topo">
+    JUSTIÇA ELEITORAL
+    <small>URNA ELETRÔNICA · ELEIÇÕES 2026</small>
+  </div>
+
+  <div class="painel">
+
+    <div class="tela" id="tela">
+
+      <div class="barra-progresso" id="barra-progresso"></div>
+
+      <div class="titulo-cargo">
+        SEU VOTO PARA
+        <b id="cargo-txt">DEPUTADO FEDERAL</b>
+      </div>
+
+      <div class="linha-num">
+        <span>Número:</span>
+        <div class="digitos" id="digitos"></div>
+      </div>
+
+      <div class="conteudo" id="conteudo">
+        <div class="dados">
+          <div class="linha"><span>Nome:</span> <b id="nome-txt">—</b></div>
+          <div class="linha"><span>Partido:</span> <b id="partido-txt">—</b></div>
+        </div>
+        <div class="foto-box" id="foto-box">
+          <img id="foto-img" alt="Foto do candidato" style="display:none">
+          <span id="foto-ph">SEM FOTO</span>
+        </div>
+      </div>
+
+      <div class="msg-nulo" id="msg-nulo">NÚMERO ERRADO</div>
+
+      <div class="rodape-tela" id="rodape-tela"></div>
+
+      <div class="tela-gravando" id="tela-gravando">
+        <div class="gravando-txt">GRAVANDO</div>
+        <div class="barra-gravacao">
+          <div class="preenchimento" id="preenchimento"></div>
+        </div>
+        <div class="gravando-sub">REGISTRANDO VOTO...</div>
+      </div>
+
+      <div class="tela-fim" id="tela-fim">
+        <div class="fim">FIM</div>
+        <div class="fim-sub">VOTAÇÃO ENCERRADA</div>
+      </div>
+
+    </div>
+
+    <div class="teclado">
+      <div class="nums">
+        <button class="btn" data-n="1">1</button>
+        <button class="btn" data-n="2">2</button>
+        <button class="btn" data-n="3">3</button>
+        <button class="btn" data-n="4">4</button>
+        <button class="btn" data-n="5">5</button>
+        <button class="btn" data-n="6">6</button>
+        <button class="btn" data-n="7">7</button>
+        <button class="btn" data-n="8">8</button>
+        <button class="btn" data-n="9">9</button>
+        <button class="btn zero" data-n="0">0</button>
+      </div>
+      <div class="acoes">
+        <button class="btn acao branco"   id="btn-branco">BRANCO</button>
+        <button class="btn acao corrige"  id="btn-corrige">CORRIGE</button>
+        <button class="btn acao confirma" id="btn-confirma">CONFIRMA</button>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="rodape-urna">URNA ELETRÔNICA · MODELO UE2026</div>
+</div>
+
+<script>
+const SONS = {
+  tecla:    "sons/voto.mp3",       // som normal de cada tecla digitada
+  confirma: "sons/confirma.mp3",   // som que toca ao final, na tela FIM
+  erro:     "sons/voto.mp3",       // som quando digita número errado
+  beep:     "sons/beep.mp3  "        // som ao confirmar um voto
+};
+
+
+
+const ELEICAO = [
+
+  /* ── 1️⃣ DEPUTADO FEDERAL — 4 DÍGITOS ── */
+  {
+    cargo: "DEPUTADO FEDERAL",
+    digitos: 4,
+    candidatos: [
+      { numero: "0234", nome: "Albert Wolfkin", partido: "Partido da União Peluda (PUP)", foto: "IMG/Albert.png" }
+    ]
+  },
+
+  /* ── 2️⃣ DEPUTADO ESTADUAL — 5 DÍGITOS ── */
+  {
+    cargo: "DEPUTADO ESTADUAL",
+    digitos: 5,
+    candidatos: [
+      { numero: "77211", nome: "Fnneco Kiro", partido: "Nordic Furrys (NFF)", foto: "IMG/Kiro.png" },
+      { numero: "45169", nome: "Hastur",      partido: "Gang Maluca (GM)",    foto: "IMG/Hastur.png" }
+    ]
+  },
+
+  /* ── 3️⃣ SENADOR — 1ª VAGA — 3 DÍGITOS ── */
+  {
+    cargo: "SENADOR — 1ª VAGA",
+    digitos: 3,
+    candidatos: [
+      { numero: "144", nome: "Tigre Hall", partido: "Missão (M)",              foto: "IMG/Hall.png" },
+      { numero: "321", nome: "Cabibi's",   partido: "União Capivarias (UC)",  foto: "IMG/Capi.png" }
+    ]
+  },
+
+  /* ── 4️⃣ SENADOR — 2ª VAGA — 3 DÍGITOS ── */
+  {
+    cargo: "SENADOR — 2ª VAGA",
+    digitos: 3,
+    candidatos: [
+      { numero: "321", nome: "Cabibi's",   partido: "União Capivarias (UC)",  foto: "IMG/Capi.png" },
+      { numero: "144", nome: "Tigre Hall", partido: "Missão (M)",              foto: "IMG/Hall.png" }
+    ]
+  },
+
+  /* ── 5️⃣ GOVERNADOR — 2 DÍGITOS ── */
+  {
+    cargo: "GOVERNADOR",
+    digitos: 2,
+    candidatos: [
+      { numero: "44", nome: "Zack BR",         partido: "Zootopia (ZTP)",             foto: "IMG/Zack.png" },
+      { numero: "69", nome: "Sergal o Sergal", partido: "União dos Nariz de Queijo (UDN)", foto: "IMG/Sergal.png" }
+    ]
+  },
+
+  /* ── 6️⃣ PRESIDENTE — 2 DÍGITOS ── */
+  {
+    cargo: "PRESIDENTE",
+    digitos: 2,
+    candidatos: [
+      { numero: "18", nome: "NICK WOLF",    partido: "Partido Transformation (TF)",     foto: "IMG/Nick.png" },
+      { numero: "99", nome: "Stella ùwú",   partido: "Game Magic Forever (GMF)",        foto: "IMG/Stella.png" },
+      { numero: "09", nome: "Nyalexandre",  partido: "Supremo Tribunal da Microsoft",   foto: "IMG/Nyalexandre.png" }
+    ]
+  }
+
+];
+
+/* ═══════════════════════════════════════════════════════════════════
+   🎵 ÁUDIO (MP3)
+   ═══════════════════════════════════════════════════════════════════ */
+const audioCache = {};
+function toca(nome) {
+  const src = SONS[nome];
+  if (!src) return;
+  try {
+    if (!audioCache[nome]) {
+      audioCache[nome] = new Audio(src);
+      audioCache[nome].preload = "auto";
+    }
+    const clone = audioCache[nome].cloneNode();
+    clone.volume = 0.85;
+    const p = clone.play();
+    if (p && p.catch) p.catch(()=>{});
+  } catch (e) {}
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   🧠 LÓGICA DA URNA
+   ═══════════════════════════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const elCargoTxt      = $("cargo-txt");
+const elDigitos       = $("digitos");
+const elConteudo      = $("conteudo");
+const elNome          = $("nome-txt");
+const elPartido       = $("partido-txt");
+const elFotoImg       = $("foto-img");
+const elFotoPH        = $("foto-ph");
+const elMsgNulo       = $("msg-nulo");
+const elRodape        = $("rodape-tela");
+const elTelaFim       = $("tela-fim");
+const elTelaGravando  = $("tela-gravando");
+const elPreenchimento = $("preenchimento");
+const elBarra         = $("barra-progresso");
+
+let cargoIdx  = 0;
+let digitos   = "";
+let estado    = "digitando"; // digitando | candidato | nulo | branco | gravando | fim
+let timerFim  = null;
+
+function cargoAtual() { return ELEICAO[cargoIdx]; }
+function numDigitos() { return cargoAtual().digitos; }
+function ehUltimoCargo() { return cargoIdx === ELEICAO.length - 1; }
+
+function acharCandidato(num) {
+  return cargoAtual().candidatos.find(c => c.numero === num);
+}
+
+function montarCaixasDigitos() {
+  elDigitos.innerHTML = "";
+  for (let i = 0; i < numDigitos(); i++) {
+    const d = document.createElement("div");
+    d.className = "dig";
+    d.id = "dig" + i;
+    elDigitos.appendChild(d);
+  }
+}
+
+function montarBarraProgresso() {
+  elBarra.innerHTML = "";
+  ELEICAO.forEach((c, i) => {
+    const e = document.createElement("div");
+    e.className = "etapa";
+    if (i < cargoIdx) e.classList.add("concluida");
+    if (i === cargoIdx) e.classList.add("atual");
+    elBarra.appendChild(e);
+  });
+}
+
+function limparFoto() {
+  elFotoImg.style.display = "none";
+  elFotoPH.style.display = "block";
+  elFotoPH.textContent = "SEM FOTO";
+}
+
+function mostrarFoto(src) {
+  limparFoto();
+  if (!src) return;
+  const img = new Image();
+  img.onload = () => {
+    elFotoImg.src = src;
+    elFotoImg.style.display = "block";
+    elFotoPH.style.display = "none";
+  };
+  img.onerror = () => {};
+  img.src = src;
+}
+
+function render() {
+  for (let i = 0; i < numDigitos(); i++) {
+    const el = $("dig" + i);
+    if (el) el.textContent = digitos[i] || "";
+  }
+
+  elConteudo.classList.remove("ativo");
+  elMsgNulo.classList.remove("ativo");
+  elTelaGravando.classList.remove("ativo");
+  elTelaFim.classList.remove("ativo");
+  elRodape.innerHTML = "";
+
+  elCargoTxt.textContent = cargoAtual().cargo;
+  montarBarraProgresso();
+
+  if (estado === "digitando") {
+    elRodape.innerHTML = `Aperte <span class="verde">VERDE</span> para CONFIRMAR &nbsp;·&nbsp; <span class="laranja">LARANJA</span> para REINICIAR`;
+  }
+
+  if (estado === "candidato") {
+    const c = acharCandidato(digitos);
+    if (c) {
+      elNome.textContent = c.nome;
+      elPartido.textContent = c.partido;
+      mostrarFoto(c.foto);
+      elConteudo.classList.add("ativo");
+      elRodape.innerHTML = `Aperte <span class="verde">VERDE</span> para CONFIRMAR &nbsp;·&nbsp; <span class="laranja">LARANJA</span> para REINICIAR`;
+    }
+  }
+
+  if (estado === "nulo") {
+    elMsgNulo.classList.add("ativo");
+    elRodape.innerHTML = `Aperte <span class="verde">VERDE</span> para CONFIRMAR &nbsp;·&nbsp; <span class="laranja">LARANJA</span> para REINICIAR`;
+  }
+
+  if (estado === "branco") {
+    elNome.textContent = "VOTO EM BRANCO";
+    elPartido.textContent = "—";
+    limparFoto();
+    elFotoPH.textContent = "BRANCO";
+    elConteudo.classList.add("ativo");
+    elRodape.innerHTML = `Aperte <span class="verde">VERDE</span> para CONFIRMAR o voto em BRANCO`;
+  }
+}
+
+function digitar(n) {
+  if (estado !== "digitando") return;
+  if (digitos.length >= numDigitos()) return;
+  toca("tecla");
+  digitos += n;
+  render();
+
+  if (digitos.length === numDigitos()) {
+    const c = acharCandidato(digitos);
+    if (c) estado = "candidato";
+    else { estado = "nulo"; toca("erro"); }
+    render();
+  }
+}
+
+function corrigir() {
+  if (estado === "fim" || estado === "gravando") return;
+  clearTimeout(timerFim);
+  toca("tecla");
+  digitos = "";
+  estado = "digitando";
+  limparFoto();
+  render();
+}
+
+function branco() {
+  if (estado === "fim" || estado === "gravando") return;
+  toca("tecla");
+  digitos = "";
+  estado = "branco";
+  render();
+}
+
+function avancarCargo() {
+  cargoIdx++;
+  digitos = "";
+  estado = "digitando";
+  limparFoto();
+  montarCaixasDigitos();
+  render();
+}
+
+function confirmar() {
+  if (estado === "digitando") { toca("erro"); return; }
+  if (estado === "fim" || estado === "gravando") return;
+
+  // Ao confirmar um candidato/branco/nulo, toca o som de confirmação.
+  // ⚠️ Chave do objeto é "beep" (minúsculo) — não "Beep"!
+  if (estado === "candidato" || estado === "branco" || estado === "nulo") {
+    toca("beep");
+  }
+
+  // Cargos do meio: só avança pro próximo, sem GRAVANDO nem FIM.
+  if (!ehUltimoCargo()) {
+    avancarCargo();
+    return;
+  }
+
+  // ÚLTIMO CARGO → GRAVANDO → FIM + som de confirmação
+  estado = "gravando";
+
+  elConteudo.classList.remove("ativo");
+  elMsgNulo.classList.remove("ativo");
+  elTelaFim.classList.remove("ativo");
+  elTelaGravando.classList.add("ativo");
+  elRodape.innerHTML = "";
+
+  // Reinicia a barrinha (0%)
+  elPreenchimento.style.transition = "none";
+  elPreenchimento.style.width = "0%";
+
+  // Anima a barrinha
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      elPreenchimento.style.transition = "width 1.8s linear";
+      elPreenchimento.style.width = "100%";
+    });
+  });
+
+  // Depois de gravar, mostra FIM + toca som de confirmação
+  timerFim = setTimeout(() => {
+    elTelaGravando.classList.remove("ativo");
+    estado = "fim";
+    elTelaFim.classList.add("ativo");
+    toca("confirma");
+  }, 1900);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   EVENTOS
+   ═══════════════════════════════════════════════════════════════════ */
+document.querySelectorAll(".btn[data-n]").forEach(btn => {
+  btn.addEventListener("click", () => digitar(btn.dataset.n));
+});
+$("btn-branco").addEventListener("click", branco);
+$("btn-corrige").addEventListener("click", corrigir);
+$("btn-confirma").addEventListener("click", confirmar);
+
+document.addEventListener("keydown", e => {
+  if (e.key >= "0" && e.key <= "9") digitar(e.key);
+  else if (e.key === "Enter")        confirmar();
+  else if (e.key === "Backspace" || e.key === "Escape") corrigir();
+  else if (e.key.toLowerCase() === "b") branco();
+});
+
+/* Inicializa */
+montarCaixasDigitos();
+render();
+</script>
+</body>
+</html>
