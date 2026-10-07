@@ -13,6 +13,7 @@
   body {
     min-height: 100vh;
     display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
     background: #0d1117 radial-gradient(circle at 50% 15%, #1c2531, #080a0e 75%);
     font-family: 'Atkinson Hyperlegible', 'Segoe UI', Tahoma, sans-serif;
     padding: 14px;
@@ -302,6 +303,57 @@
     font-weight: 700;
   }
 
+  /* ═══════════════════════════════════════════════════════
+     RODAPÉ DE CRÉDITOS (copyright + avatar)
+     ═══════════════════════════════════════════════════════ */
+  .creditos {
+    width: 900px;
+    max-width: 100%;
+    margin-top: 18px;
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    background: rgba(20, 25, 33, .65);
+    border: 1px solid rgba(128, 255, 128, .15);
+    border-radius: 14px;
+    box-shadow: 0 6px 20px rgba(0,0,0,.4);
+    color: #c9d1d9;
+    font-size: 13px;
+    letter-spacing: .3px;
+    text-align: center;
+    backdrop-filter: blur(6px);
+  }
+  .creditos .avatar {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #29c24a;
+    box-shadow: 0 0 10px rgba(41,194,74,.5);
+    flex-shrink: 0;
+    background: #2b2b2b;
+  }
+  .creditos .texto {
+    line-height: 1.4;
+  }
+  .creditos .texto b {
+    color: #80ff80;
+    font-weight: 800;
+  }
+  .creditos .texto small {
+    display: block;
+    font-size: 10.5px;
+    opacity: .7;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+  .creditos .coracao {
+    color: #ff5f8a;
+    font-weight: 900;
+  }
+
   @media (max-width: 780px) {
     .painel { grid-template-columns: 1fr; }
     .tela { min-height: 400px; padding: 16px; }
@@ -309,6 +361,7 @@
     .btn.acao { height: 52px; font-size: 11px; }
     .tela-fim .fim { font-size: 72px; }
     .dig { width: 38px; height: 50px; font-size: 28px; }
+    .creditos { flex-direction: column; gap: 8px; padding: 14px; }
   }
 </style>
 </head>
@@ -392,15 +445,42 @@
   <div class="rodape-urna">URNA ELETRÔNICA · MODELO UE2026</div>
 </div>
 
+<!-- ═══════════════════════════════════════════════════════════════
+     RODAPÉ DE CRÉDITOS — EDITE AQUI
+     ═══════════════════════════════════════════════════════════════
+     ▸ Troque o texto do copyright como quiser
+     ▸ O avatar abaixo usa a URL do FurAffinity, mas o FA
+       geralmente BLOQUEIA hotlink. Recomendado:
+         1. Baixe a imagem
+         2. Salve como "IMG/avatar.png"
+         3. Troque o src por "IMG/avatar.png"
+     ═══════════════════════════════════════════════════════════════ -->
+<footer class="creditos">
+  <img
+    class="avatar"
+    src="https://d.furaffinity.net/art/nyale0102/1748042253/1748042253.nyale0102_png_eu_boca_abbertaa.png"
+    onerror="this.style.display='none'"
+    alt="Avatar do criador">
+  <div class="texto">
+    <b>© 2026 Nyalexandre</b> — Todos os direitos reservados
+    <small>Feito com <span class="coracao">♥</span> para os amigos furry · Urna Furry 2026</small>
+  </div>
+</footer>
+
 <script>
+/* ═══════════════════════════════════════════════════════════════════
+   🔊 CAMINHOS DOS SONS
+   ═══════════════════════════════════════════════════════════════════
+   ⚠️ IMPORTANTE: GitHub Pages roda em Linux, então MAIÚSCULA e
+   minúscula importam! Se sua pasta se chama "sons" (minúsculo),
+   tem que escrever "sons/..." aqui embaixo também.
+   ═══════════════════════════════════════════════════════════════════ */
 const SONS = {
-  tecla:    "SONS/Voto.mp3",       // som normal de cada tecla digitada
-  confirma: "SONS/Confirma.mp3",   // som que toca ao final, na tela FIM
-  erro:     "SONS/Voto.mp3",       // som quando digita número errado
-  beep:     "SONS/Beep.mp3"         // som ao confirmar um voto
+  tecla:    "sons/voto.mp3",       // som normal de cada tecla digitada
+  confirma: "sons/confirma.mp3",   // som que toca ao final, na tela FIM
+  erro:     "sons/voto.mp3",       // som quando digita número errado
+  beep:     "sons/beep.mp3"        // som ao confirmar um voto
 };
-
-
 
 const ELEICAO = [
 
@@ -448,7 +528,7 @@ const ELEICAO = [
     cargo: "GOVERNADOR",
     digitos: 2,
     candidatos: [
-      { numero: "44", nome: "Zack BR",         partido: "Zootopia (ZTP)",             foto: "IMG/Zack.png" },
+      { numero: "44", nome: "Zack BR",         partido: "Zootopia (ZTP)",                foto: "IMG/Zack.png" },
       { numero: "69", nome: "Sergal o Sergal", partido: "União dos Nariz de Queijo (UDN)", foto: "IMG/Sergal.png" }
     ]
   },
@@ -647,8 +727,6 @@ function confirmar() {
   if (estado === "digitando") { toca("erro"); return; }
   if (estado === "fim" || estado === "gravando") return;
 
-  // Ao confirmar um candidato/branco/nulo, toca o som de confirmação.
-  // ⚠️ Chave do objeto é "beep" (minúsculo) — não "Beep"!
   if (estado === "candidato" || estado === "branco" || estado === "nulo") {
     toca("beep");
   }
@@ -668,11 +746,9 @@ function confirmar() {
   elTelaGravando.classList.add("ativo");
   elRodape.innerHTML = "";
 
-  // Reinicia a barrinha (0%)
   elPreenchimento.style.transition = "none";
   elPreenchimento.style.width = "0%";
 
-  // Anima a barrinha
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       elPreenchimento.style.transition = "width 1.8s linear";
@@ -680,7 +756,6 @@ function confirmar() {
     });
   });
 
-  // Depois de gravar, mostra FIM + toca som de confirmação
   timerFim = setTimeout(() => {
     elTelaGravando.classList.remove("ativo");
     estado = "fim";
